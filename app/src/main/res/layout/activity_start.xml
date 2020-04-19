@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal"
+    tools:context=".StartActivity">
+
+    <Button
+        android:id="@+id/single_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:text="Одиночная игра"
+        android:layout_marginEnd="24dp" />
+
+    <Button
+        android:id="@+id/multi_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:text="Игра с друзьями"/>
+
+
+</LinearLayout>
