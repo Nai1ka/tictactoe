@@ -4,8 +4,7 @@
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 <item>
-    <shape xmlns:android="http://schemas.android.com/apk/res/android"
-        android:shape="rectangle">
+    <shape android:shape="rectangle">
         <solid android:color="@color/colorLightGray" />
         <stroke
             android:width="3dp"

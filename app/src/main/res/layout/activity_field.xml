@@ -18,7 +18,19 @@
         app:layout_constraintEnd_toEndOf="@+id/gridLayout"
         app:layout_constraintStart_toStartOf="@+id/gridLayout"
         app:layout_constraintTop_toTopOf="parent"
-        android:textSize="24dp"/>
+        android:textSize="24sp"/>
+
+
+    <TextView
+        android:id="@+id/tv_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <GridLayout
         android:id="@+id/gridLayout"

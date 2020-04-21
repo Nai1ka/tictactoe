@@ -2,17 +2,19 @@ package ru.ndevelop.tictactoe
 
 
 class TicTacToeEngine(
-    var isMultiplayer: Boolean = false
+    var isMultiplayer: Boolean = false,
+    var roomId:Int=0
 ) {
-    var step = 0
-    var isGameEnded = false
+    private var singleplayerStep=0
+    var step=""
+    private var isGameEnded = false
     var values =  Array(9) { 0 }
 
 init {
     if (isMultiplayer && Utils.isHost) {
-        DatabaseHelper.writeInfo(values)
-        DatabaseHelper.writeStep("x")
-        DatabaseHelper.writeRetryStatus(0)
+        DatabaseHelper.writeInfo(values,roomId)
+        DatabaseHelper.writeStep("x",roomId)
+        DatabaseHelper.writeRetryStatus(0,roomId)
     }
 }
 
@@ -21,16 +23,16 @@ init {
 // 2-нолики
         if (values[position - 1] == 0 && !isGameEnded) {
             if(!isMultiplayer) {
-                when (step) {
+                when (singleplayerStep) {
                     0 -> values[position - 1] = 1
                     1 -> values[position - 1] = 2
                 }
-                step = (step + 1) % 2
+                singleplayerStep = (singleplayerStep + 1) % 2
 
             }
             if (isMultiplayer ) {
-                if(Utils.mySymbol=="x" && Utils.step=="x" )  {DatabaseHelper.addInfo(position-1,1);DatabaseHelper.writeStep("o");Utils.step="o" }
-                if(Utils.mySymbol=="o"&& Utils.step=="o") {DatabaseHelper.addInfo(position-1,2);DatabaseHelper.writeStep("x");Utils.step="x" }
+                if(Utils.mySymbol=="x" &&step=="x" )  {DatabaseHelper.addInfo(position-1,1,roomId);DatabaseHelper.writeStep("o",roomId);step="o" }
+                if(Utils.mySymbol=="o"&& step=="o") {DatabaseHelper.addInfo(position-1,2,roomId);DatabaseHelper.writeStep("x",roomId);step="x" }
 
             }
 
@@ -50,7 +52,7 @@ init {
             winner = TYPES.CROSS
             isGameEnded = true
         }
-        if ((values[0] == 2 && values[1] == 2 && values[2] == 2) or (values[3] == 2 && values[4] == 2 && values[5] == 2)
+       else if ((values[0] == 2 && values[1] == 2 && values[2] == 2) or (values[3] == 2 && values[4] == 2 && values[5] == 2)
             or (values[6] == 2 && values[7] == 2 && values[8] == 2) or
             (values[0] == 2 && values[3] == 2 && values[6] == 2) or (values[1] == 2 && values[4] == 2 && values[7] == 2)
             or (values[2] == 2 && values[5] == 2 && values[8] == 2) or (values[0] == 2 && values[4] == 2 && values[8] == 2) or
@@ -75,11 +77,11 @@ init {
         values = Array(9) { 0 }
         Utils.mySymbol=if(Utils.mySymbol=="x") "o" else "x"
         if(Utils.isHost) {
-            DatabaseHelper.writeRetryStatus(0)
-            DatabaseHelper.writeInfo( Array(9) { 0 })
+            DatabaseHelper.writeRetryStatus(0,roomId)
+            DatabaseHelper.writeInfo( Array(9) { 0 },roomId)
         }
-        Utils.step=if(Utils.step=="x") "o" else "x" // TODO оптимизировать
-        DatabaseHelper.writeStep(Utils.step)
+        step=if(step=="x") "o" else "x" // TODO оптимизировать
+        DatabaseHelper.writeStep(step,roomId)
         isGameEnded = false
     }
 }

@@ -8,7 +8,6 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.textfield.TextInputLayout
 import kotlinx.android.synthetic.main.activity_start.*
 
 
@@ -41,7 +40,7 @@ class StartActivity : AppCompatActivity(), View.OnClickListener {
         val layoutParams = WindowManager.LayoutParams()
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-        idDialog.window?.attributes = layoutParams;
+        idDialog.window?.attributes = layoutParams
     }
 
     override fun onClick(v: View?) {
@@ -51,7 +50,7 @@ class StartActivity : AppCompatActivity(), View.OnClickListener {
                 startActivity(intent)
             }
             multi_btn -> {
-                modeDialog.show();
+                modeDialog.show()
             }
             hostButton -> {
                 Utils.isHost=true
@@ -66,9 +65,9 @@ class StartActivity : AppCompatActivity(), View.OnClickListener {
             }
             submitButton ->{
                 Utils.isHost=false
-               Utils.mySymbol="o"
-                Utils.roomId=idEditText.text.toString().toInt()
+                Utils.mySymbol="o"
                 val intent = Intent(this, MultiplayerActivity::class.java)
+                intent.putExtra("roomId",idEditText.text.toString().toInt())
                 startActivity(intent)
             }
         }
