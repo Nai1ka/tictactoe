@@ -6,29 +6,30 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_field.*
 
 class SingleplayerActivity : AppCompatActivity(), View.OnClickListener {
-    lateinit var TicTacToe: TicTacToeEngine
-    lateinit var squares: Array<View>
+    private lateinit var ticTacToe: TicTacToeEngine
+    private lateinit var squares: Array<View>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_field)
 
-        TicTacToe = TicTacToeEngine()
-        TicTacToe.values =
+        ticTacToe = TicTacToeEngine(isMultiplayer = 0)
+        ticTacToe.values =
             savedInstanceState?.getIntArray("FIELD")?.toTypedArray()
                 ?: Array(9) { 0 }
         squares = arrayOf(rect_1, rect_2, rect_3, rect_4, rect_5, rect_6, rect_7, rect_8, rect_9)
-        drawField(TicTacToe.values)
+        drawField(ticTacToe.values)
         initButtons()
-        if (TicTacToe.check() != TYPES.UNDEFINED) {
+        if (ticTacToe.check() != TYPES.UNDEFINED) {
             squares.forEach {
                 it.isClickable = false
                 btn_retry.visibility = View.VISIBLE
             }
-            when (TicTacToe.check()) {
+            when (ticTacToe.check()) {
                 TYPES.CROSS -> tv_result.text = "Выиграли крестики!"
                 TYPES.ZERO -> tv_result.text = "Выиграли нолики!"
                 TYPES.TIE -> tv_result.text = "Ничья"
+                TYPES.UNDEFINED -> tv_result.text=""
             }
         }
 
@@ -38,47 +39,47 @@ class SingleplayerActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v?.id) {
             rect_1.id -> {
-                TicTacToe.editField(1)
-               drawField(TicTacToe.values)
+                ticTacToe.editField(1)
+               drawField(ticTacToe.values)
             }
             rect_2.id -> {
-                TicTacToe.editField(2)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(2)
+                drawField(ticTacToe.values)
             }
             rect_3.id -> {
-                TicTacToe.editField(3)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(3)
+                drawField(ticTacToe.values)
             }
             rect_4.id -> {
-                TicTacToe.editField(4)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(4)
+                drawField(ticTacToe.values)
             }
             rect_5.id -> {
-                TicTacToe.editField(5)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(5)
+                drawField(ticTacToe.values)
             }
             rect_6.id -> {
-                TicTacToe.editField(6)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(6)
+                drawField(ticTacToe.values)
             }
             rect_7.id -> {
-                TicTacToe.editField(7)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(7)
+                drawField(ticTacToe.values)
             }
             rect_8.id -> {
-                TicTacToe.editField(8)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(8)
+                drawField(ticTacToe.values)
             }
             rect_9.id -> {
-                TicTacToe.editField(9)
-                drawField(TicTacToe.values)
+                ticTacToe.editField(9)
+                drawField(ticTacToe.values)
             }
             btn_retry.id -> {
                 btn_retry.visibility = View.GONE
-                TicTacToe.retry()
+                ticTacToe.retry()
                 squares.forEach {
                     it.setBackgroundResource(R.drawable.basic_square)
-                    squares.forEach { it.isClickable = true }
+                    it.isClickable = true
                 }
             }
         }
@@ -105,18 +106,18 @@ class SingleplayerActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putIntArray("FIELD", TicTacToe.values.toIntArray())
+        outState.putIntArray("FIELD", ticTacToe.values.toIntArray())
 
 
     }
-    fun handleResult() {
-        if (TicTacToe.check() != TYPES.UNDEFINED) {
+    private fun handleResult() {
+        if (ticTacToe.check() != TYPES.UNDEFINED) {
             squares.forEach {
                 it.isClickable = false
                 btn_retry.visibility = View.VISIBLE
             }
         }
-        when (TicTacToe.check()) {
+        when (ticTacToe.check()) {
             TYPES.CROSS -> tv_result.text ="Выиграли крестики!"
             TYPES.ZERO -> tv_result.text ="Выиграли нолики!"
             TYPES.TIE -> tv_result.text ="Ничья"

@@ -6,6 +6,5 @@ import com.google.firebase.ktx.Firebase
 
 object Utils {
     var database: DatabaseReference = Firebase.database.getReference("rooms")
-    var isHost:Boolean=true
-    var mySymbol=""
+    var isHost: Boolean =true
 }

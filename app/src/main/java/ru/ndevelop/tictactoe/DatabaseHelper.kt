@@ -20,11 +20,14 @@ class DatabaseHelper
         fun clearRoom(roomId:Int) {
             Utils.database.child("$roomId").removeValue()
         }
-        fun writeRetryStatus(flag:Int,roomId:Int){
-            Utils.database.child("$roomId").child("retry").setValue(flag)
+        fun writeRetryStatus(player:Int,status:Boolean,roomId:Int){
+            Utils.database.child("$roomId").child("retry").child("$player").setValue(status)
         }
         fun writeConnected(status:Boolean,roomId:Int){
             Utils.database.child("$roomId").child("connected").setValue(status)
+        }
+        fun writePlayerStep(step:String,player:Int,roomId:Int){
+            Utils.database.child("$roomId").child("players").child("player$player").setValue(step)
         }
     }
 
