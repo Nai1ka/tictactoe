@@ -1,11 +1,13 @@
 package ru.ndevelop.tictactoe
 
+import android.util.Log
+
 
 class TicTacToeEngine(
     var isMultiplayer: Int = 0, //0-одиночка //1-на одном устрйостве //2 - на 2 устрйоствах
     var roomId: Int = 0
 ) {
-    private var singleplayerStep = 0
+     var singleplayerStep = 0
     var step = ""
     var mySymbol = ""
     private var isGameEnded = false
@@ -22,7 +24,7 @@ class TicTacToeEngine(
                 1,
                 roomId
             )
-        } else {
+        } else if(isMultiplayer==2 && !Utils.isHost) {
             DatabaseHelper.writeConnected(true, roomId); DatabaseHelper.writePlayerStep(
                 "o",
                 2,
@@ -38,6 +40,8 @@ class TicTacToeEngine(
         if (values[position - 1] == 0 && !isGameEnded) {
             if (isMultiplayer == 0) {
                 values[position - 1] = 1
+                if(check(TYPES.UNDEFINED,values)) values[makeStep(values)]=2
+
             }
             if (isMultiplayer == 1) {
                 when (singleplayerStep) {
@@ -61,40 +65,37 @@ class TicTacToeEngine(
                     );step = "x"
                 }
             }
-
-
         }
-
     }
 
-    fun check(): TYPES {
-        var winner: TYPES = TYPES.UNDEFINED
-        if ((values[0] == 1 && values[1] == 1 && values[2] == 1) or (values[3] == 1 && values[4] == 1 && values[5] == 1)
-            or (values[6] == 1 && values[7] == 1 && values[8] == 1) or
-            (values[0] == 1 && values[3] == 1 && values[6] == 1) or (values[1] == 1 && values[4] == 1 && values[7] == 1)
-            or (values[2] == 1 && values[5] == 1 && values[8] == 1) or (values[0] == 1 && values[4] == 1 && values[8] == 1) or
-            (values[2] == 1 && values[4] == 1 && values[6] == 1)
-        ) {
-            winner = TYPES.CROSS
-            isGameEnded = true
-        } else if ((values[0] == 2 && values[1] == 2 && values[2] == 2) or (values[3] == 2 && values[4] == 2 && values[5] == 2)
-            or (values[6] == 2 && values[7] == 2 && values[8] == 2) or
-            (values[0] == 2 && values[3] == 2 && values[6] == 2) or (values[1] == 2 && values[4] == 2 && values[7] == 2)
-            or (values[2] == 2 && values[5] == 2 && values[8] == 2) or (values[0] == 2 && values[4] == 2 && values[8] == 2) or
-            (values[2] == 2 && values[4] == 2 && values[6] == 2)
-        ) {
-            winner = TYPES.ZERO
-            isGameEnded = true
-        } else if (values[0] != 0 && values[1] != 0 && values[2] != 0 && values[3] != 0 && values[4] != 0
-            && values[5] != 0 && values[6] != 0 && values[7] != 0 && values[8] != 0
-        ) {
-            winner = TYPES.TIE
-            isGameEnded = true
+    fun check(type: TYPES, field: Array<Int> = values): Boolean {
+        val player = type.value
+        var status = false
+        if (type == TYPES.CROSS || type == TYPES.ZERO) {
+
+            if ((field[0] == player && field[1] == player && field[2] == player) or (field[3] == player && field[4] == player && field[5] == player)
+                or (field[6] == player && field[7] == player && field[8] == player) or
+                (field[0] == player && field[3] == player && field[6] == player) or (field[1] == player && field[4] == player && field[7] == player)
+                or (field[2] == player && field[5] == player && field[8] == player) or (field[0] == player && field[4] == player && field[8] == player) or
+                (field[2] == player && field[4] == player && field[6] == player)
+            ) {
+                status = true
+                isGameEnded = true
+            }
+        } else if (type == TYPES.TIE) {
+
+            if (field[0] != 0 && field[1] != 0 && field[2] != 0 && field[3] != 0 && field[4] != 0
+                && field[5] != 0 && field[6] != 0 && field[7] != 0 && field[8] != 0
+            ) {
+                status = true
+                isGameEnded = true
+            }
+
+        } else if (type == TYPES.UNDEFINED) {
+            if (!check(TYPES.CROSS) && !check(TYPES.TIE) && !check(TYPES.ZERO)) status = true
         }
-        return winner
-
+        return status
     }
-
 
     fun retry() {
         values = Array(9) { 0 }
@@ -114,14 +115,38 @@ class TicTacToeEngine(
         isGameEnded = false
 
     }
+
+    private fun makeStep(field: Array<Int>): Int {
+
+        field.forEachIndexed { index, element ->
+            if (element == 0) {
+                field[index] = 2
+                if (check(TYPES.ZERO, field)) {
+                    Log.d("DEBUG", "$index")
+                    return index
+                }
+                else field[index]=0
+            }
+        }
+
+        for (i in field.indices) {
+            val randInt = (0..8).random()
+            if (field[randInt] == 0) {
+                Log.d("DEBUG", "$randInt")
+                return randInt
+            }
+
+        }
+        return 0
+
+    }
 }
 
-
-enum class TYPES {
-    CROSS,
-    ZERO,
-    UNDEFINED,
-    TIE;
+enum class TYPES(val value: Int) {
+    CROSS(1),
+    ZERO(2),
+    TIE(3),
+    UNDEFINED(0);
 
 
 }

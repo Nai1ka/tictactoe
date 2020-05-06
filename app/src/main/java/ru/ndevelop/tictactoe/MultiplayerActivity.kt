@@ -12,7 +12,7 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_field.*
 
 
-class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
+class MultiplayerActivity : AppCompatActivity(), View.OnClickListener,ActivityInterface {
     lateinit var ticTacToe: TicTacToeEngine
     private lateinit var squares: Array<View>
     private var roomId: Int = 0
@@ -26,7 +26,7 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
         setContentView(R.layout.activity_field)
 
         val arguments = intent
-        roomId = arguments.getIntExtra("roomId", (1000..99999).random())
+        roomId = arguments.getIntExtra("roomId", (10000..99999).random())
         room = Utils.database.child("$roomId")
         multilayerStatus = arguments.getIntExtra("multiplayerType", 1)
         ticTacToe = TicTacToeEngine(isMultiplayer = multilayerStatus, roomId = roomId)
@@ -34,22 +34,20 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
         ticTacToe.values =
             savedInstanceState?.getIntArray("FIELD")?.toTypedArray()
                 ?: Array(9) { 0 }
+        ticTacToe.singleplayerStep= savedInstanceState?.getInt("SINGLE_STEP") ?: 0
+        Log.d("DEBUG", "${ticTacToe.values[0]}");
         squares = arrayOf(rect_1, rect_2, rect_3, rect_4, rect_5, rect_6, rect_7, rect_8, rect_9)
+        drawField(ticTacToe.values,squares)
         initButtons()
         if (multilayerStatus == 2) {
-            setClickable(false)
+            setClickable(false,squares)
             tv_id.text = "${resources.getText(R.string.opponent_waiting)} ${roomId.toString()}"
             startTracking()
         }
-        if (ticTacToe.check() != TYPES.UNDEFINED) {
-            setClickable(false)
+        if (!ticTacToe.check(TYPES.UNDEFINED) ) {
+            setClickable(false,squares)
             btn_retry.visibility = View.VISIBLE
-            when (ticTacToe.check()) {
-                TYPES.CROSS -> tv_result.text = "Выиграли крестики!"
-                TYPES.ZERO -> tv_result.text = "Выиграли нолики!"
-                TYPES.TIE -> tv_result.text = "Ничья"
-                TYPES.UNDEFINED -> tv_result.text = ""
-            }
+           handleTextView()
         }
     }
 
@@ -62,39 +60,39 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
         when (v) {
             rect_1 -> {
                 ticTacToe.editField(1)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_2 -> {
                 ticTacToe.editField(2)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_3 -> {
                 ticTacToe.editField(3)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_4 -> {
                 ticTacToe.editField(4)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_5 -> {
                 ticTacToe.editField(5)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_6 -> {
                 ticTacToe.editField(6)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_7 -> {
                 ticTacToe.editField(7)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_8 -> {
                 ticTacToe.editField(8)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             rect_9 -> {
                 ticTacToe.editField(9)
-                drawField(ticTacToe.values)
+                drawField(ticTacToe.values,squares)
             }
             btn_retry -> {
                 btn_retry.visibility = View.GONE
@@ -123,14 +121,12 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
         btn_retry.setOnClickListener(this)
     }
 
-    private fun drawField(field: Array<Int>) {
-        for (i in field.indices) {
-            when (field[i]) {
-                0 -> squares[i].setBackgroundResource(R.drawable.basic_square)
-                1 -> squares[i].setBackgroundResource(R.drawable.cross_square)
-                2 -> squares[i].setBackgroundResource(R.drawable.zero_square)
-            }
-        }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putIntArray("FIELD", ticTacToe.values.toIntArray())
+        outState.putInt("SINGLE_STEP",ticTacToe.singleplayerStep)
+
+
     }
 
     private fun startTracking() {
@@ -143,7 +139,7 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
                         result[i] = (dataSnapshot.child("$i").value.toString().toInt())
                     }
                     ticTacToe.values = result
-                    drawField(ticTacToe.values)
+                    drawField(ticTacToe.values,squares)
                     handleResult()
                 }
                 else{
@@ -158,9 +154,7 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
 
         listeners[1] = room.child("retry").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-
                 if (dataSnapshot.child("0").value==true && dataSnapshot.child("1").value==true) retry()
-                Log.d("DEBUG", "retry")
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -195,7 +189,7 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.value == true) {
                     tv_id.visibility = View.GONE
-                    setClickable(true)
+                    setClickable(true,squares)
                     room.child("connected").removeEventListener(this)
                 }
             }
@@ -207,30 +201,21 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     fun handleResult() {
-        if (ticTacToe.check() != TYPES.UNDEFINED) {
+        if (!ticTacToe.check(TYPES.UNDEFINED)) {
             btn_retry.visibility = View.VISIBLE
-            setClickable(false)
+            setClickable(false,squares)
         }
-        when (ticTacToe.check()) {
-            TYPES.CROSS -> tv_result.text = "Выиграли крестики!"
-            TYPES.ZERO -> tv_result.text = "Выиграли нолики!"
-            TYPES.TIE -> tv_result.text = "Ничья"
-            TYPES.UNDEFINED -> tv_result.text = ""
-        }
+        handleTextView()
     }
 
     fun retry() {
         tv_result.text = ""
         ticTacToe.retry()
-        setClickable(true)
+        setClickable(true,squares)
         if (multilayerStatus == 1) squares.forEach { it.setBackgroundResource(R.drawable.basic_square) }
     }
 
-    fun setClickable(status: Boolean) {
-        squares.forEach {
-            it.isClickable = status
-        }
-    }
+
     fun finishActivity(){
         if (multilayerStatus == 2) {
             room.child("field").removeEventListener(listeners[0]!!)
@@ -241,6 +226,15 @@ class MultiplayerActivity : AppCompatActivity(), View.OnClickListener {
                 val intent = Intent(this, StartActivity::class.java)
                 startActivity(intent)
             }
+        }
+
+    }
+    private fun handleTextView(){
+        when {
+            ticTacToe.check(TYPES.CROSS) -> tv_result.text = "Выиграли крестики!"
+            ticTacToe.check(TYPES.ZERO) -> tv_result.text = "Выиграли нолики!"
+            ticTacToe.check(TYPES.TIE) -> tv_result.text = "Ничья"
+            ticTacToe.check(TYPES.UNDEFINED) -> tv_result.text = ""
         }
 
     }
